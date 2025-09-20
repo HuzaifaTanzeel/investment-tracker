@@ -22,10 +22,18 @@ async function apiRequest<T>(
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Handle our API response format
+    if (data.success === false) {
+      throw new Error(data.error || 'API request failed');
+    }
+    
+    // Return the data field if it exists, otherwise return the whole response
+    return data.data !== undefined ? data.data : data;
   } catch (error) {
     console.error(`API request failed for ${endpoint}:`, error);
     throw error;
@@ -62,7 +70,13 @@ export const transactionApi = {
   },
 
   // Create new transaction
-  create: async (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
+  create: async (transaction: {
+    transactionDate: string;
+    symbol: string;
+    activity: 'BUY' | 'SELL';
+    quantity: number;
+    rate: number;
+  }) => {
     return apiRequest<Transaction>('/transactions', {
       method: 'POST',
       body: JSON.stringify(transaction),
@@ -92,24 +106,57 @@ export const transactionApi = {
 
 // Portfolio API
 export const portfolioApi = {
+  // Get current holdings and summary
+  getAll: async () => {
+    return apiRequest<{ holdings: Holding[]; summary: PnLSummary }>('/portfolio');
+  },
+
   // Get current holdings
   getHoldings: async () => {
-    return apiRequest<Holding[]>('/portfolio/holdings');
+    const data = await apiRequest<{ holdings: any[]; summary: any }>('/portfolio');
+    return data.holdings.map((h: any) => ({
+      symbol: h.symbol,
+      quantity: h.availableQuantity,
+      avgCost: h.avgCostPerShare,
+      totalInvested: h.totalInvestedAmount,
+      currentValue: undefined,
+      unrealizedPnL: undefined,
+    }));
   },
 
   // Get portfolio summary
   getSummary: async () => {
-    return apiRequest<PnLSummary>('/portfolio/summary');
+    const data = await apiRequest<{ holdings: any[]; summary: any }>('/portfolio');
+    return {
+      totalInvested: data.summary.totalInvested,
+      totalRecovered: data.summary.totalRecovered,
+      realizedPnL: data.summary.totalRealizedPnL,
+      unrealizedPnL: 0,
+      currentMonthPnL: 0,
+      totalCharges: 0,
+    };
   },
 
   // Get holdings for specific script
   getScriptHolding: async (symbol: string) => {
-    return apiRequest<Holding>(`/portfolio/script/${symbol}`);
+    const data = await apiRequest<{ details: any; transactions: any[]; realizedPnL: any[] }>(`/portfolio/${symbol}`);
+    return {
+      symbol: data.details.symbol,
+      quantity: data.details.availableQuantity,
+      avgCost: data.details.avgCostPerShare,
+      totalInvested: data.details.totalInvestedAmount,
+      currentValue: data.details.currentValue,
+      unrealizedPnL: data.details.unrealizedPnL,
+    };
   },
 
   // Get available shares for selling
   getAvailableShares: async () => {
-    return apiRequest<Record<string, number>>('/portfolio/available-shares');
+    const data = await apiRequest<{ holdings: any[] }>('/portfolio');
+    return data.holdings.reduce((acc, holding) => {
+      acc[holding.symbol] = holding.availableQuantity;
+      return acc;
+    }, {} as Record<string, number>);
   },
 };
 
@@ -147,7 +194,7 @@ export const reportsApi = {
 
   // Get script-wise P&L
   getScriptPnL: async () => {
-    return apiRequest<ScriptPnL[]>('/reports/script-pnl');
+    return apiRequest<ScriptPnL[]>('/reports/script-wise');
   },
 
   // Get current month P&L

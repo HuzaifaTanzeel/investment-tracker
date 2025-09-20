@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id               String    @id @default(cuid())
+  transactionDate  DateTime  @map("transaction_date")
+  symbol           String    // PSX stock symbol
+  activity         Activity  // BUY or SELL
+  quantity         Int
+  rate             Float     // Price per share
+  amount           Float     // quantity * rate
+  commission       Float     // Broker commission
+  sst              Float     // Sales & Services Tax
+  cdc              Float     // Central Depository Company charges
+  totalCharges     Float     @map("total_charges")
+  netAmount        Float     @map("net_amount") // Final amount after charges
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  realizedPnL      RealizedPnL[]
+  
+  @@map("transactions")
+}
+
+model PortfolioHolding {
+  symbol              String   @id
+  availableQuantity   Int      @map("available_quantity")
+  avgCostPerShare     Float    @map("avg_cost_per_share")
+  totalInvestedAmount Float    @map("total_invested_amount")
+  totalSharesBought   Int      @map("total_shares_bought")
+  totalSharesSold     Int      @map("total_shares_sold")
+  totalRealizedPnL    Float    @map("total_realized_pnl")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  
+  @@map("portfolio_holdings")
+}
+
+model RealizedPnL {
+  id                  String      @id @default(cuid())
+  transactionId       String      @map("transaction_id")
+  symbol              String
+  sellDate            DateTime    @map("sell_date")
+  quantitySold        Int         @map("quantity_sold")
+  sellRate            Float       @map("sell_rate")
+  avgCostBasis        Float       @map("avg_cost_basis")
+  grossProceeds       Float       @map("gross_proceeds")
+  netProceeds         Float       @map("net_proceeds")
+  costBasis           Float       @map("cost_basis")
+  realizedPnL         Float       @map("realized_pnl")
+  pnLPercentage       Float       @map("pnl_percentage")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  
+  // Relations
+  transaction         Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  @@map("realized_pnl")
+}
+
+enum Activity {
+  BUY
+  SELL
+}
