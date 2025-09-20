@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db'
 import { InvestmentCalculations } from '@/lib/calculations'
 import { TransactionCreateInput, TransactionUpdateInput, TransactionQuery } from '@/lib/validations'
-import { Activity } from '@prisma/client'
 
 export class TransactionService {
   /**
@@ -14,7 +13,7 @@ export class TransactionService {
       const charges = InvestmentCalculations.calculateCharges(rate, amount, quantity)
       
       // For SELL transactions, validate available quantity
-      if (activity === Activity.SELL) {
+      if (activity === 'SELL') {
         await this.validateSellTransaction(symbol, quantity, tx)
       }
 
@@ -31,14 +30,14 @@ export class TransactionService {
           sst: charges.sst,
           cdc: charges.cdc,
           totalCharges: charges.totalCharges,
-          netAmount: activity === Activity.BUY 
+          netAmount: activity === 'BUY' 
             ? amount + charges.totalCharges 
             : amount - charges.totalCharges
         }
       })
 
       // Update portfolio state
-      if (activity === Activity.BUY) {
+      if (activity === 'BUY') {
         await this.updatePortfolioOnBuy(transaction, tx)
       } else {
         await this.updatePortfolioOnSell(transaction, tx)
@@ -250,7 +249,7 @@ export class TransactionService {
 
     // Replay all transactions
     for (const transaction of transactions) {
-      if (transaction.activity === Activity.BUY) {
+      if (transaction.activity === 'BUY') {
         await this.updatePortfolioOnBuy(transaction, tx)
       } else {
         await this.updatePortfolioOnSell(transaction, tx)

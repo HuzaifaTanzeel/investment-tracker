@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TransactionService } from '@/lib/services/transaction-service'
+import { MockDataService } from '@/lib/services/mock-data'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const transaction = await TransactionService.getTransactionById(params.id)
+    const transaction = MockDataService.getTransactionById(params.id)
 
     if (!transaction) {
       return NextResponse.json(
@@ -39,7 +39,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await TransactionService.deleteTransaction(params.id)
+    const success = MockDataService.deleteTransaction(params.id)
+    
+    if (!success) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Transaction not found' 
+        },
+        { status: 404 }
+      )
+    }
+    
     return NextResponse.json({ 
       success: true,
       message: 'Transaction deleted successfully' 

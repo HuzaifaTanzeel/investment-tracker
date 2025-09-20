@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TransactionService } from '@/lib/services/transaction-service'
+import { MockDataService } from '@/lib/services/mock-data'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { symbol: string } }
 ) {
   try {
-    const scriptData = await TransactionService.getScriptDetails(params.symbol)
+    const scriptData = MockDataService.getScriptDetails(params.symbol)
 
     return NextResponse.json({
       success: true,

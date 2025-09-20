@@ -14,7 +14,7 @@ model Transaction {
   id               String    @id @default(cuid())
   transactionDate  DateTime  @map("transaction_date")
   symbol           String    // PSX stock symbol
-  activity         Activity  // BUY or SELL
+  activity         String    // BUY or SELL
   quantity         Int
   rate             Float     // Price per share
   amount           Float     // quantity * rate
@@ -66,7 +66,3 @@ model RealizedPnL {
   @@map("realized_pnl")
 }
 
-enum Activity {
-  BUY
-  SELL
-}

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { Activity } from '@prisma/client'
 
 // Transaction validation schemas
 export const TransactionCreateSchema = z.object({
@@ -7,7 +6,7 @@ export const TransactionCreateSchema = z.object({
     message: "Invalid date format"
   }),
   symbol: z.string().min(1).max(10).transform(val => val.toUpperCase()),
-  activity: z.nativeEnum(Activity),
+  activity: z.enum(['BUY', 'SELL']),
   quantity: z.number().positive().int(),
   rate: z.number().positive(),
 })
@@ -16,7 +15,7 @@ export const TransactionUpdateSchema = TransactionCreateSchema.partial()
 
 export const TransactionQuerySchema = z.object({
   symbol: z.string().optional(),
-  activity: z.nativeEnum(Activity).optional(),
+  activity: z.enum(['BUY', 'SELL']).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TransactionService } from '@/lib/services/transaction-service'
+import { MockDataService } from '@/lib/services/mock-data'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       endDate: endDate || undefined
     }
 
-    const realizedPnL = await TransactionService.getRealizedPnL(filters)
+    const realizedPnL = MockDataService.getRealizedPnL(filters)
 
     return NextResponse.json({
       success: true,

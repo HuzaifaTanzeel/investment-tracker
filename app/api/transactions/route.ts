@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TransactionService } from '@/lib/services/transaction-service'
+import { MockDataService } from '@/lib/services/mock-data'
 import { TransactionCreateSchema, TransactionQuerySchema } from '@/lib/validations'
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const query = Object.fromEntries(searchParams)
     
     const validatedQuery = TransactionQuerySchema.parse(query)
-    const result = await TransactionService.getTransactions(validatedQuery)
+    const result = MockDataService.getTransactions(validatedQuery)
     
     return NextResponse.json({
       success: true,
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedInput = TransactionCreateSchema.parse(body)
     
-    const transaction = await TransactionService.createTransaction(validatedInput)
+    const transaction = MockDataService.createTransaction(validatedInput)
     
     return NextResponse.json({
       success: true,
