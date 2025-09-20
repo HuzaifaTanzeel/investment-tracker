@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockDataService } from '@/lib/services/mock-data'
+import { DrizzleTransactionService } from '@/lib/services/drizzle-transaction-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       endDate: endDate || undefined
     }
 
-    const realizedPnL = MockDataService.getRealizedPnL(filters)
+    const realizedPnL = await DrizzleTransactionService.getRealizedPnL(filters)
 
     return NextResponse.json({
       success: true,

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { MockDataService } from '@/lib/services/mock-data'
+import { DrizzleTransactionService } from '@/lib/services/drizzle-transaction-service'
 
 export async function GET() {
   try {
-    const portfolioData = MockDataService.getPortfolio()
+    const portfolioData = await DrizzleTransactionService.getPortfolioSummary()
     
     return NextResponse.json({
       success: true,

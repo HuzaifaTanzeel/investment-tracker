@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockDataService } from '@/lib/services/mock-data'
+import { DrizzleTransactionService } from '@/lib/services/drizzle-transaction-service'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { symbol: string } }
 ) {
   try {
-    const scriptData = MockDataService.getScriptDetails(params.symbol)
+    const scriptData = await DrizzleTransactionService.getScriptDetails(params.symbol)
 
     return NextResponse.json({
       success: true,

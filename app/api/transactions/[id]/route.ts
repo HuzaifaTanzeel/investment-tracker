@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockDataService } from '@/lib/services/mock-data'
+import { DrizzleTransactionService } from '@/lib/services/drizzle-transaction-service'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const transaction = MockDataService.getTransactionById(params.id)
+    const transaction = await DrizzleTransactionService.getTransactionById(parseInt(params.id))
 
     if (!transaction) {
       return NextResponse.json(
@@ -39,17 +39,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const success = MockDataService.deleteTransaction(params.id)
-    
-    if (!success) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Transaction not found' 
-        },
-        { status: 404 }
-      )
-    }
+    await DrizzleTransactionService.deleteTransaction(parseInt(params.id))
     
     return NextResponse.json({ 
       success: true,
