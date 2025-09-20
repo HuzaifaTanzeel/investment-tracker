@@ -1,6 +1,6 @@
 import { Transaction, Holding, PnLSummary, MonthlyPnL, YearlyPnL, RealizedPnL, ScriptPnL } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '/api';
 
 // Generic API request helper
 async function apiRequest<T>(
